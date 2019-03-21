@@ -34,6 +34,7 @@
 @implementation RNBetterPanGestureRecognizer {
   __weak RNGestureHandler *_gestureHandler;
   NSUInteger _realMinimumNumberOfTouches;
+  CGPoint _startLocation;
   BOOL _hasCustomActivationCriteria;
 }
 
@@ -61,6 +62,12 @@
   return self;
 }
 
+-(CGFloat) distanceFromPoint:(CGPoint)p1 ToPoint:(CGPoint)p2 {
+    CGFloat xDist = (p2.x - p1.x);
+    CGFloat yDist = (p2.y - p1.y);
+    return sqrt((xDist * xDist) + (yDist * yDist));
+}
+
 - (void)setMinimumNumberOfTouches:(NSUInteger)minimumNumberOfTouches
 {
   _realMinimumNumberOfTouches = minimumNumberOfTouches;
@@ -78,12 +85,25 @@
     super.minimumNumberOfTouches = _realMinimumNumberOfTouches;
   }
 #endif
+  UITouch *touch = [touches anyObject];
+  _startLocation = [touch locationInView:self.view];
+  self.cancelsTouchesInView = NO;
+  if (!_hasCustomActivationCriteria) {
+    self.state = UIGestureRecognizerStateBegan;
+  }
+
   [super touchesBegan:touches withEvent:event];
 }
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
   [super touchesMoved:touches withEvent:event];
+  UITouch *touch = [touches anyObject];
+  CGPoint touchLocation = [touch locationInView:self.view];
+  CGFloat distance = [self distanceFromPoint:touchLocation ToPoint:_startLocation];
+  if (distance > 0) {
+    self.cancelsTouchesInView = YES;
+  }
   if (self.state == UIGestureRecognizerStatePossible && [self shouldFailUnderCustomCriteria]) {
     self.state = UIGestureRecognizerStateFailed;
     return;
