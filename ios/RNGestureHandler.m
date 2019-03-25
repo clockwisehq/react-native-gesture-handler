@@ -263,7 +263,7 @@ shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecog
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
 shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
-    if (_recognizer.state == UIGestureRecognizerStateBegan && _recognizer.state == UIGestureRecognizerStatePossible) {
+    if (_recognizer.state == UIGestureRecognizerStateBegan || _recognizer.state == UIGestureRecognizerStatePossible) {
         return YES;
     }
     if ([_simultaneousHandlers count]) {

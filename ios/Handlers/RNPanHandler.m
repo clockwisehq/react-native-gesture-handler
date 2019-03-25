@@ -63,9 +63,9 @@
 }
 
 -(CGFloat) distanceFromPoint:(CGPoint)p1 ToPoint:(CGPoint)p2 {
-    CGFloat xDist = (p2.x - p1.x);
-    CGFloat yDist = (p2.y - p1.y);
-    return sqrt((xDist * xDist) + (yDist * yDist));
+  CGFloat xDist = (p2.x - p1.x);
+  CGFloat yDist = (p2.y - p1.y);
+  return sqrt((xDist * xDist) + (yDist * yDist));
 }
 
 - (void)setMinimumNumberOfTouches:(NSUInteger)minimumNumberOfTouches
@@ -86,12 +86,17 @@
   }
 #endif
   UITouch *touch = [touches anyObject];
-  _startLocation = [touch locationInView:self.view];
-  self.cancelsTouchesInView = NO;
-  if (!_hasCustomActivationCriteria) {
-    self.state = UIGestureRecognizerStateBegan;
+  
+  if (self.state == UIGestureRecognizerStatePossible && [_gestureHandler containsPointInView]) {
+    _startLocation = [touch locationInView:self.view];
+    
+    self.cancelsTouchesInView = NO;
+    
+    if (!_hasCustomActivationCriteria) {
+      self.state = UIGestureRecognizerStateBegan;
+    }
   }
-
+  
   [super touchesBegan:touches withEvent:event];
 }
 
@@ -132,9 +137,18 @@
   }
 }
 
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+  [super touchesEnded:touches withEvent:event];
+  if (self.state == UIGestureRecognizerStateEnded || self.state == UIGestureRecognizerStateCancelled) {
+    [self reset];
+  }
+}
+
 - (void)reset
 {
   self.enabled = YES;
+  self.cancelsTouchesInView = YES;
   [super reset];
 }
 
@@ -230,7 +244,7 @@
   APPLY_NAMED_INT_PROP(minimumNumberOfTouches, @"minPointers");
   APPLY_NAMED_INT_PROP(maximumNumberOfTouches, @"maxPointers");
 #endif
-    
+  
   id prop = config[@"minDist"];
   if (prop != nil) {
     CGFloat dist = [RCTConvert CGFloat:prop];
