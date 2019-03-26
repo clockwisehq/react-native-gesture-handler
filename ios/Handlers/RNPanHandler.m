@@ -148,7 +148,7 @@
 - (void)reset
 {
   self.enabled = YES;
-  self.cancelsTouchesInView = YES;
+  self.cancelsTouchesInView = NO;
   [super reset];
 }
 
